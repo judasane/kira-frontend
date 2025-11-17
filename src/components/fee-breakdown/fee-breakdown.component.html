@@ -1,0 +1,52 @@
+
+@if (feePreview(); as preview) {
+  <div class="mt-6 border border-slate-200 rounded-lg">
+    <button (click)="toggle()" class="w-full flex justify-between items-center p-3 text-left">
+      <span class="font-medium text-slate-700">Payment Breakdown</span>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
+           class="w-5 h-5 text-slate-500 transition-transform"
+           [class.rotate-180]="isOpen()">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+      </svg>
+    </button>
+    
+    @if (isOpen()) {
+      <div class="p-4 border-t border-slate-200 bg-slate-50 text-sm">
+        <ul class="space-y-2 text-slate-600">
+          <li class="flex justify-between">
+            <span>Item Price</span>
+            <span class="font-medium text-slate-800">{{ baseAmount() | currency:'USD' }}</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Fixed Fee</span>
+            <span>{{ preview.breakdown.fixedFeeUsd | currency:'USD' }}</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Variable Fee</span>
+            <span>{{ preview.breakdown.variableFeeUsd | currency:'USD' }}</span>
+          </li>
+           <li class="flex justify-between">
+            <span>FX Markup</span>
+            <span>{{ preview.breakdown.fxMarkupUsd | currency:'USD' }}</span>
+          </li>
+          @if (preview.breakdown.firstTxDiscountUsd > 0) {
+            <li class="flex justify-between text-green-600">
+              <span>First Transaction Discount</span>
+              <span>- {{ preview.breakdown.firstTxDiscountUsd | currency:'USD' }}</span>
+            </li>
+          }
+           <li class="flex justify-between font-semibold pt-2 border-t border-slate-200 text-slate-800">
+            <span>Total Fees</span>
+            <span>{{ preview.totalFeesUsd | currency:'USD' }}</span>
+          </li>
+        </ul>
+
+        <div class="mt-4 pt-4 border-t border-dashed border-slate-300">
+           <p class="text-xs text-slate-500 text-center">
+              Exchange Rate: 1 USD ≈ {{ preview.fxRate | number:'1.2-2' }} MXN. <br> Recipient will receive ~{{ preview.recipientAmountMxn | currency:'MXN' }}.
+           </p>
+        </div>
+      </div>
+    }
+  </div>
+}

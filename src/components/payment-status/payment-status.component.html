@@ -1,0 +1,38 @@
+
+<div class="p-8 bg-white rounded-xl shadow-lg text-center">
+  @if (status() === 'COMPLETED') {
+    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+      <svg class="h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    </div>
+    <h2 class="mt-4 text-2xl font-bold text-slate-800">Payment Successful!</h2>
+    <p class="mt-2 text-slate-600">Your payment has been processed successfully.</p>
+  } @else {
+    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
+      <svg class="h-10 w-10 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </div>
+    <h2 class="mt-4 text-2xl font-bold text-slate-800">Payment Declined</h2>
+    <p class="mt-2 text-slate-600">Unfortunately, your payment could not be processed. Please check your card details or try a different card.</p>
+  }
+
+  @if (result(); as res) {
+    <div class="mt-6 text-left text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
+      <dl class="grid grid-cols-3 gap-x-4 gap-y-2">
+        <dt class="text-slate-500 col-span-1">Status</dt>
+        <dd class="text-slate-700 font-medium col-span-2">{{ res.status }}</dd>
+
+        <dt class="text-slate-500 col-span-1">Transaction ID</dt>
+        <dd class="text-slate-700 font-medium col-span-2 break-all">{{ res.transactionId }}</dd>
+        
+        <dt class="text-slate-500 col-span-1">Total Paid</dt>
+        <dd class="text-slate-700 font-medium col-span-2">{{ res.amountUsd | currency:'USD' }}</dd>
+
+        <dt class="text-slate-500 col-span-1">PSP</dt>
+        <dd class="text-slate-700 font-medium col-span-2">{{ res.pspProvider }}</dd>
+      </dl>
+    </div>
+  }
+</div>

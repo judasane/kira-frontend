@@ -1,0 +1,137 @@
+<div class="w-full max-w-md mx-auto">
+  @switch (status()) {
+    @case ('INITIALIZING') {
+      <div class="flex flex-col items-center justify-center p-10 bg-white rounded-xl shadow-lg">
+        <svg class="animate-spin h-10 w-10 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="mt-4 text-slate-600 font-medium">Initializing...</p>
+      </div>
+    }
+    @case ('AWAITING_INPUT') {
+      <div class="p-8 bg-white rounded-xl shadow-lg text-center">
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Find Your Payment Link</h2>
+        <p class="mt-2 text-slate-600 max-w-sm mx-auto">Please enter the ID of your payment link to proceed with your payment.</p>
+    
+        <form (submit)="search()" class="mt-8">
+          <div class="flex gap-2">
+            <input type="text" [formControl]="searchControl" placeholder="Enter Payment Link ID" class="flex-grow block w-full px-4 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+              Find
+            </button>
+          </div>
+           @if(searchControl.touched && searchControl.invalid) {
+            <p class="mt-2 text-xs text-red-600 text-left">Please enter a valid link ID.</p>
+          }
+        </form>
+      </div>
+    }
+    @case ('LOADING_LINK') {
+      <div class="flex flex-col items-center justify-center p-10 bg-white rounded-xl shadow-lg">
+        <svg class="animate-spin h-10 w-10 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="mt-4 text-slate-600 font-medium">Loading payment details...</p>
+      </div>
+    }
+    @case ('LINK_NOT_FOUND') {
+      <div class="p-8 bg-white rounded-xl shadow-lg text-center">
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Payment Link Not Found</h2>
+        <p class="mt-2 text-slate-600">The payment link you are trying to access is invalid or has expired.</p>
+        
+        <form (submit)="search()" class="mt-8">
+          <div class="flex gap-2">
+            <input type="text" [formControl]="searchControl" placeholder="Enter Payment Link ID" class="flex-grow block w-full px-4 py-3 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+              Search
+            </button>
+          </div>
+           @if(searchControl.touched && searchControl.invalid) {
+            <p class="mt-2 text-xs text-red-600 text-left">Please enter a valid link ID.</p>
+          }
+        </form>
+      </div>
+    }
+    @case ('ERROR_RETRYABLE') {
+      <div class="p-10 bg-white rounded-xl shadow-lg text-center">
+        <h2 class="text-xl font-bold text-red-600">An Error Occurred</h2>
+        <p class="mt-2 text-slate-600">We couldn't process your payment at this time. Please try again.</p>
+        <button (click)="retry()" class="mt-6 w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+          Try Again
+        </button>
+      </div>
+    }
+    @case ('COMPLETED') {
+      <app-payment-status [status]="status()" [result]="paymentResult()"></app-payment-status>
+    }
+    @case ('FAILED') {
+      <app-payment-status [status]="status()" [result]="paymentResult()"></app-payment-status>
+    }
+    @case ('READY_TO_PAY') {
+      @if (paymentLink(); as link) {
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            <h1 class="text-2xl font-bold text-slate-800">{{ link.description }}</h1>
+            <p class="text-sm text-slate-500">Merchant ID: {{ link.merchantId }}</p>
+
+            <div class="mt-6 text-center">
+              <p class="text-slate-600">Total Amount Due</p>
+              <p class="text-5xl font-extrabold text-slate-900 tracking-tight">{{ totalAmount() | currency:'USD':'symbol':'1.2-2' }}</p>
+            </div>
+            
+            <app-fee-breakdown [feePreview]="link.feePreview" [baseAmount]="link.amountUsd"></app-fee-breakdown>
+          </div>
+          
+          <div class="bg-slate-50 p-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Pay with card</h2>
+            <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" novalidate>
+              <div class="space-y-4">
+                <div>
+                  <label for="cardHolder" class="block text-sm font-medium text-slate-700">Cardholder Name</label>
+                  <input type="text" id="cardHolder" formControlName="cardHolder" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                </div>
+                <div>
+                  <label for="cardNumber" class="block text-sm font-medium text-slate-700">Card Number</label>
+                  <input type="tel" id="cardNumber" formControlName="cardNumber" (input)="formatCardNumber($event)" placeholder="0000 0000 0000 0000" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                  @if(paymentForm.controls.cardNumber.touched && paymentForm.controls.cardNumber.errors) {
+                    <p class="mt-1 text-xs text-red-600">Please enter a valid card number.</p>
+                  }
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="expiryDate" class="block text-sm font-medium text-slate-700">Expiry Date</label>
+                    <input type="tel" id="expiryDate" formControlName="expiryDate" (input)="formatExpiryDate($event)" placeholder="MM / YY" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                     @if(paymentForm.controls.expiryDate.touched && paymentForm.controls.expiryDate.errors) {
+                      <p class="mt-1 text-xs text-red-600">Enter a valid MM/YY date.</p>
+                    }
+                  </div>
+                  <div>
+                    <label for="cvc" class="block text-sm font-medium text-slate-700">CVC</label>
+                    <input type="tel" id="cvc" formControlName="cvc" placeholder="123" maxlength="4" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                     @if(paymentForm.controls.cvc.touched && paymentForm.controls.cvc.errors) {
+                      <p class="mt-1 text-xs text-red-600">Enter a valid CVC.</p>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" [disabled]="status() === 'PROCESSING_PAYMENT'" class="mt-6 w-full flex justify-center items-center bg-slate-800 hover:bg-slate-900 disabled:bg-slate-400 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                @if (status() === 'PROCESSING_PAYMENT') {
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                } @else {
+                  <span>Pay {{ totalAmount() | currency:'USD' }}</span>
+                }
+              </button>
+            </form>
+          </div>
+        </div>
+      }
+    }
+  }
+</div>

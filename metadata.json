@@ -1,0 +1,5 @@
+{
+  "name": "Payment Link Checkout",
+  "description": "A frontend application that serves as the checkout interface for a payment link API. It allows users to view payment details, including fee breakdowns, and securely enter their card information to complete a payment.",
+  "requestFramePermissions": []
+}
