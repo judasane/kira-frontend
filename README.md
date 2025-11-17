@@ -4,6 +4,9 @@
 
 ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+
+**Secure, PCI-compliant payment checkout interface for Kira's cross-border payment links**
+
 [Live Demo](https://payment-link-checkout-512413970762.us-west1.run.app) · [Backend Repo](https://github.com/judasane/kira)
 
 </div>
