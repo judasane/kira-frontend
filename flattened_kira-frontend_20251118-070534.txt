@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 06:28:29 UTC 2025
+Generated at: Tue Nov 18 07:05:34 UTC 2025
 Branch: main
-Commit: 4e13fec7a67a2e5c353a87267ecab908df5597bf
+Commit: 55d37aafe136690088dbd99b844dffd90a9f64bf
 Repository: judasane/kira-frontend
 ==================================
 
@@ -244,6 +244,35 @@ dist-ssr
 *.sw?
 
 --- END OF FILE: .gitignore ---
+
+--- START OF FILE: .idx/dev.nix ---
+{pkgs}: {
+      channel = "stable-24.11";
+      packages = [
+        pkgs.nodejs_22
+        pkgs.nodePackages."@angular/cli"
+      ];
+      idx.extensions = [
+      ];
+      idx.previews = {
+        previews = {
+          web = {
+            command = [
+              "npm"
+              "run"
+              "dev"
+              "--"
+              "--port"
+              "$PORT"
+              "--host"
+              "0.0.0.0"
+            ];
+            manager = "web";
+          };
+        };
+      };
+    }
+--- END OF FILE: .idx/dev.nix ---
 
 --- START OF FILE: README.md ---
 
