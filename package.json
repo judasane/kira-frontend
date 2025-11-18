@@ -4,9 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "ng serve",
+    "dev": "ng serve --port 9002 --host 0.0.0.0",
     "build": "ng build",
     "preview": "ng serve --configuration=production"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "rxjs": "^7.8.2",
