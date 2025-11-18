@@ -1,11 +1,42 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 12:50:33 UTC 2025
+Generated at: Tue Nov 18 13:42:39 UTC 2025
 Branch: main
-Commit: e0be751ea5d74a10d4ea7f0ed4ef9629dba702a0
+Commit: 5181f2c2f17cc78d7158189ff8d37c83baf207c3
 Repository: judasane/kira-frontend
 ==================================
+
+--- START OF FILE: .github/workflows/ci.yml ---
+name: Run lint, build and tests
+on:
+  push:
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test:coverage
+
+--- END OF FILE: .github/workflows/ci.yml ---
 
 --- START OF FILE: .github/workflows/deploy.yml ---
 name: Deploy to GitHub Pages
@@ -232,6 +263,7 @@ jobs:
 
 # Angular
 /dist
+/coverage
 /.angular/cache
 
 # Dependencies
@@ -1799,13 +1831,74 @@ A successful implementation of Kira Payment Links Frontend includes:
             }
           },
           "defaultConfiguration": "development"
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              ".//**/*.ts",
+              ".//**/*.html"
+            ]
+          }
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }
 
 --- END OF FILE: angular.json ---
+
+--- START OF FILE: eslint.config.js ---
+// @ts-check
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import angular from "angular-eslint";
+
+export default tseslint.config(
+  {
+    files: ["**/*.ts"],
+    extends: [
+      eslint.configs.recommended,
+      ...tseslint.configs.recommended,
+      ...tseslint.configs.stylistic,
+      ...angular.configs.tsRecommended,
+    ],
+    processor: angular.processInlineTemplates,
+    rules: {
+      "@angular-eslint/directive-selector": [
+        "error",
+        {
+          type: "attribute",
+          prefix: "app",
+          style: "camelCase",
+        },
+      ],
+      "@angular-eslint/component-selector": [
+        "error",
+        {
+          type: "element",
+          prefix: "app",
+          style: "kebab-case",
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/*.html"],
+    extends: [
+      ...angular.configs.templateRecommended,
+      ...angular.configs.templateAccessibility,
+    ],
+    rules: {},
+  }
+);
+
+--- END OF FILE: eslint.config.js ---
 
 --- START OF FILE: metadata.json ---
 {
@@ -1824,30 +1917,46 @@ A successful implementation of Kira Payment Links Frontend includes:
   "scripts": {
     "dev": "ng serve --port 9002 --host 0.0.0.0",
     "build": "ng build",
-    "preview": "ng serve --configuration=production"
+    "preview": "ng serve --configuration=production",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "ng lint"
   },
   "engines": {
     "node": ">=20.19.0"
   },
   "dependencies": {
-    "rxjs": "^7.8.2",
-    "@angular/platform-browser": "^20.3.0",
-    "@angular/router": "^20.3.12",
-    "@angular/core": "^20.3.0",
-    "@angular/forms": "^20.3.12",
-    "@angular/common": "^20.3.0",
-    "@angular/compiler": "^20.3.0",
     "@angular/build": "^20.3.0",
     "@angular/cli": "^20.3.0",
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
     "@angular/compiler-cli": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.12",
+    "@angular/platform-browser": "^20.3.0",
+    "@angular/router": "^20.3.12",
+    "rxjs": "^7.8.2",
     "tailwindcss": "latest"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.0.5",
+    "@angular/platform-browser-dynamic": "^20.3.12",
     "@types/node": "^22.14.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "angular-eslint": "20.6.0",
+    "eslint": "^9.39.0",
+    "jsdom": "^27.2.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "typescript-eslint": "8.46.3",
+    "vite": "^6.2.0",
+    "vitest": "^3.2.4",
+    "zone.js": "^0.15.1"
   }
 }
+
 --- END OF FILE: package.json ---
 
 --- START OF FILE: src/app.component.html ---
@@ -2188,7 +2297,7 @@ export class CheckoutComponent implements OnInit {
         }
       });
 
-    } catch (error) {
+    } catch {
       this.errorMessage.set('An unexpected error occurred while preparing the payment. Please try again.');
       this.status.set('ERROR_RETRYABLE');
       this.paymentForm.enable();
@@ -2355,7 +2464,7 @@ export class FeeBreakdownComponent {
 
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { CheckoutStatus, ProcessPaymentResponse } from '../../models/payment.model';
+import { ProcessPaymentResponse } from '../../models/payment.model';
 
 @Component({
   selector: 'app-payment-status',
@@ -2408,6 +2517,195 @@ bootstrapApplication(AppComponent, {
 
 --- END OF FILE: src/main.ts ---
 
+--- START OF FILE: src/models/payment.model.spec.ts ---
+import { describe, it, expect } from 'vitest';
+import type {
+  FeePreview,
+  PaymentLinkResponse,
+  PaymentLinkWithPreviewResponse,
+  ProcessPaymentRequest,
+  ProcessPaymentResponse,
+  CheckoutStatus,
+} from './payment.model';
+
+describe('Payment Models', () => {
+  describe('FeePreview', () => {
+    it('should create a valid FeePreview object', () => {
+      const feePreview: FeePreview = {
+        fxRate: 20.5,
+        totalFeesUsd: 5.50,
+        recipientAmountMxn: 2050,
+        breakdown: {
+          fixedFeeUsd: 2.00,
+          variableFeeUsd: 2.50,
+          fxMarkupUsd: 1.00,
+          firstTxDiscountUsd: 0,
+        },
+      };
+
+      expect(feePreview.fxRate).toBe(20.5);
+      expect(feePreview.totalFeesUsd).toBe(5.50);
+      expect(feePreview.recipientAmountMxn).toBe(2050);
+      expect(feePreview.breakdown.fixedFeeUsd).toBe(2.00);
+    });
+  });
+
+  describe('PaymentLinkResponse', () => {
+    it('should create a valid PaymentLinkResponse object', () => {
+      const paymentLink: PaymentLinkResponse = {
+        id: 'link123',
+        merchantId: 'merchant123',
+        status: 'ACTIVE',
+        amountUsd: 100,
+        description: 'Test payment',
+        expiresAt: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        checkoutUrl: 'https://example.com/checkout/link123',
+      };
+
+      expect(paymentLink.id).toBe('link123');
+      expect(paymentLink.status).toBe('ACTIVE');
+    });
+
+    it('should accept all valid status values', () => {
+      const statuses: PaymentLinkResponse['status'][] = [
+        'DRAFT',
+        'ACTIVE',
+        'EXPIRED',
+        'COMPLETED',
+        'CANCELLED',
+      ];
+
+      statuses.forEach((status) => {
+        const link: PaymentLinkResponse = {
+          id: 'test',
+          merchantId: 'merchant',
+          status,
+          amountUsd: 100,
+          description: 'Test',
+          expiresAt: null,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          checkoutUrl: 'https://example.com',
+        };
+        expect(link.status).toBe(status);
+      });
+    });
+  });
+
+  describe('PaymentLinkWithPreviewResponse', () => {
+    it('should extend PaymentLinkResponse with feePreview', () => {
+      const paymentLinkWithPreview: PaymentLinkWithPreviewResponse = {
+        id: 'link123',
+        merchantId: 'merchant123',
+        status: 'ACTIVE',
+        amountUsd: 100,
+        description: 'Test payment',
+        expiresAt: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        checkoutUrl: 'https://example.com/checkout/link123',
+        feePreview: {
+          fxRate: 20.5,
+          totalFeesUsd: 5.50,
+          recipientAmountMxn: 2050,
+          breakdown: {
+            fixedFeeUsd: 2.00,
+            variableFeeUsd: 2.50,
+            fxMarkupUsd: 1.00,
+            firstTxDiscountUsd: 0,
+          },
+        },
+      };
+
+      expect(paymentLinkWithPreview.feePreview).toBeDefined();
+      expect(paymentLinkWithPreview.feePreview.fxRate).toBe(20.5);
+    });
+  });
+
+  describe('ProcessPaymentRequest', () => {
+    it('should create a valid ProcessPaymentRequest with STRIPE', () => {
+      const request: ProcessPaymentRequest = {
+        cardToken: 'tok_stripe_123',
+        pspProvider: 'STRIPE',
+        idempotencyKey: 'key123',
+        metadata: { userId: 'user123' },
+      };
+
+      expect(request.pspProvider).toBe('STRIPE');
+      expect(request.cardToken).toBe('tok_stripe_123');
+    });
+
+    it('should create a valid ProcessPaymentRequest with ADYEN', () => {
+      const request: ProcessPaymentRequest = {
+        cardToken: 'tok_adyen_123',
+        pspProvider: 'ADYEN',
+        idempotencyKey: 'key456',
+      };
+
+      expect(request.pspProvider).toBe('ADYEN');
+      expect(request.metadata).toBeUndefined();
+    });
+  });
+
+  describe('ProcessPaymentResponse', () => {
+    it('should create a valid completed payment response', () => {
+      const response: ProcessPaymentResponse = {
+        transactionId: 'txn123',
+        status: 'COMPLETED',
+        paymentLinkId: 'link123',
+        pspProvider: 'STRIPE',
+        amountUsd: 100,
+        recipientAmountMxn: 2050,
+        fxRateApplied: 20.5,
+        totalFeesUsd: 5.50,
+      };
+
+      expect(response.status).toBe('COMPLETED');
+      expect(response.transactionId).toBe('txn123');
+    });
+
+    it('should create a valid failed payment response', () => {
+      const response: ProcessPaymentResponse = {
+        transactionId: 'txn456',
+        status: 'FAILED',
+        paymentLinkId: 'link456',
+        pspProvider: 'ADYEN',
+        amountUsd: 100,
+        recipientAmountMxn: 0,
+        fxRateApplied: 20.5,
+        totalFeesUsd: 0,
+      };
+
+      expect(response.status).toBe('FAILED');
+    });
+  });
+
+  describe('CheckoutStatus', () => {
+    it('should accept all valid checkout status values', () => {
+      const statuses: CheckoutStatus[] = [
+        'INITIALIZING',
+        'AWAITING_INPUT',
+        'LOADING_LINK',
+        'LINK_NOT_FOUND',
+        'READY_TO_PAY',
+        'PROCESSING_PAYMENT',
+        'COMPLETED',
+        'FAILED',
+        'ERROR_RETRYABLE',
+      ];
+
+      statuses.forEach((status) => {
+        const currentStatus: CheckoutStatus = status;
+        expect(currentStatus).toBe(status);
+      });
+    });
+  });
+});
+
+--- END OF FILE: src/models/payment.model.spec.ts ---
+
 --- START OF FILE: src/models/payment.model.ts ---
 export interface FeePreview {
   fxRate: number;
@@ -2441,7 +2739,7 @@ export interface ProcessPaymentRequest {
   cardToken: string;
   pspProvider: 'STRIPE' | 'ADYEN';
   idempotencyKey: string;
-  metadata?: { [key: string]: any };
+  metadata?: Record<string, unknown>;
 }
 
 export interface ProcessPaymentResponse {
@@ -2467,6 +2765,159 @@ export type CheckoutStatus =
   | 'ERROR_RETRYABLE';
 --- END OF FILE: src/models/payment.model.ts ---
 
+--- START OF FILE: src/services/api.service.spec.ts ---
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ApiService } from './api.service';
+import { PaymentLinkWithPreviewResponse, ProcessPaymentRequest, ProcessPaymentResponse } from '../models/payment.model';
+
+describe('ApiService', () => {
+  let service: ApiService;
+  let httpTesting: HttpTestingController;
+  const baseUrl = 'https://kira-payment-api.onrender.com';
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        ApiService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+    service = TestBed.inject(ApiService);
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
+  });
+
+  it('should be created', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('getPaymentLink', () => {
+    it('should retrieve payment link by id', () => {
+      const mockResponse: PaymentLinkWithPreviewResponse = {
+        id: 'link123',
+        merchantId: 'merchant123',
+        status: 'ACTIVE',
+        amountUsd: 100,
+        description: 'Test payment',
+        expiresAt: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        checkoutUrl: 'https://example.com/checkout/link123',
+        feePreview: {
+          fxRate: 20.5,
+          totalFeesUsd: 5.50,
+          recipientAmountMxn: 2050,
+          breakdown: {
+            fixedFeeUsd: 2.00,
+            variableFeeUsd: 2.50,
+            fxMarkupUsd: 1.00,
+            firstTxDiscountUsd: 0,
+          },
+        },
+      };
+
+      service.getPaymentLink('link123').subscribe((response) => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpTesting.expectOne(`${baseUrl}/payment-links/link123`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should handle different payment link ids', () => {
+      const testIds = ['abc123', 'xyz789', 'test-id-001'];
+
+      testIds.forEach((id) => {
+        service.getPaymentLink(id).subscribe();
+        const req = httpTesting.expectOne(`${baseUrl}/payment-links/${id}`);
+        expect(req.request.method).toBe('GET');
+        req.flush({});
+      });
+    });
+  });
+
+  describe('processPayment', () => {
+    it('should process payment with correct request', () => {
+      const paymentRequest: ProcessPaymentRequest = {
+        cardToken: 'tok_test_123',
+        pspProvider: 'STRIPE',
+        idempotencyKey: 'key123',
+        metadata: { userId: 'user123' },
+      };
+
+      const mockResponse: ProcessPaymentResponse = {
+        transactionId: 'txn123',
+        status: 'COMPLETED',
+        paymentLinkId: 'link123',
+        pspProvider: 'STRIPE',
+        amountUsd: 100,
+        recipientAmountMxn: 2050,
+        fxRateApplied: 20.5,
+        totalFeesUsd: 5.50,
+      };
+
+      service.processPayment('link123', paymentRequest).subscribe((response) => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpTesting.expectOne(`${baseUrl}/payment-links/link123/payments`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(paymentRequest);
+      req.flush(mockResponse);
+    });
+
+    it('should handle ADYEN provider', () => {
+      const paymentRequest: ProcessPaymentRequest = {
+        cardToken: 'tok_adyen_123',
+        pspProvider: 'ADYEN',
+        idempotencyKey: 'key456',
+      };
+
+      service.processPayment('link456', paymentRequest).subscribe();
+
+      const req = httpTesting.expectOne(`${baseUrl}/payment-links/link456/payments`);
+      expect(req.request.body.pspProvider).toBe('ADYEN');
+      req.flush({});
+    });
+
+    it('should handle failed payment status', () => {
+      const paymentRequest: ProcessPaymentRequest = {
+        cardToken: 'tok_fail_123',
+        pspProvider: 'STRIPE',
+        idempotencyKey: 'key789',
+      };
+
+      const mockResponse: ProcessPaymentResponse = {
+        transactionId: 'txn456',
+        status: 'FAILED',
+        paymentLinkId: 'link789',
+        pspProvider: 'STRIPE',
+        amountUsd: 100,
+        recipientAmountMxn: 0,
+        fxRateApplied: 20.5,
+        totalFeesUsd: 0,
+      };
+
+      service.processPayment('link789', paymentRequest).subscribe((response) => {
+        expect(response.status).toBe('FAILED');
+      });
+
+      const req = httpTesting.expectOne(`${baseUrl}/payment-links/link789/payments`);
+      req.flush(mockResponse);
+    });
+  });
+});
+
+--- END OF FILE: src/services/api.service.spec.ts ---
+
 --- START OF FILE: src/services/api.service.ts ---
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -2489,6 +2940,67 @@ export class ApiService {
   }
 }
 --- END OF FILE: src/services/api.service.ts ---
+
+--- START OF FILE: src/services/mock-psp-sdk.service.spec.ts ---
+import { describe, it, expect, beforeEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { MockPspSdkService } from './mock-psp-sdk.service';
+
+describe('MockPspSdkService', () => {
+  let service: MockPspSdkService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(MockPspSdkService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('createToken', () => {
+    it('should return a token for STRIPE', async () => {
+      const token = await service.createToken('STRIPE');
+      expect(token).toBeDefined();
+      expect(typeof token).toBe('string');
+      expect(token).toMatch(/^tok_mock_stripe_/);
+    });
+
+    it('should return a token for ADYEN', async () => {
+      const token = await service.createToken('ADYEN');
+      expect(token).toBeDefined();
+      expect(typeof token).toBe('string');
+      expect(token).toMatch(/^tok_mock_adyen_/);
+    });
+
+    it('should return different tokens on multiple calls', async () => {
+      const token1 = await service.createToken('STRIPE');
+      const token2 = await service.createToken('STRIPE');
+      expect(token1).not.toBe(token2);
+    });
+
+    it('should simulate network latency', async () => {
+      const startTime = Date.now();
+      await service.createToken('STRIPE');
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+
+      // Should take at least 500ms (minimum latency)
+      expect(duration).toBeGreaterThanOrEqual(500);
+      // Should not take more than 1500ms (maximum latency + some buffer)
+      expect(duration).toBeLessThan(1500);
+    });
+
+    it('should include UUID in token', async () => {
+      const token = await service.createToken('STRIPE');
+      // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+      expect(token).toMatch(uuidPattern);
+    });
+  });
+});
+
+--- END OF FILE: src/services/mock-psp-sdk.service.spec.ts ---
 
 --- START OF FILE: src/services/mock-psp-sdk.service.ts ---
 
@@ -2514,6 +3026,91 @@ export class MockPspSdkService {
 
 --- END OF FILE: src/services/mock-psp-sdk.service.ts ---
 
+--- START OF FILE: src/services/validation.service.spec.ts ---
+import { describe, it, expect, beforeEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { FormControl } from '@angular/forms';
+import { ValidationService } from './validation.service';
+
+describe('ValidationService', () => {
+  let service: ValidationService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(ValidationService);
+  });
+
+  describe('luhnValidator', () => {
+    it('should be created', () => {
+      expect(service).toBeDefined();
+    });
+
+    it('should return null for empty value', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('');
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should return null for null value', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl(null);
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should return error for non-numeric value', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('abcd');
+      expect(validator(control)).toEqual({ luhn: true });
+    });
+
+    it('should return error for invalid card number', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('1234567890123456');
+      expect(validator(control)).toEqual({ luhn: true });
+    });
+
+    it('should return null for valid card number (Visa)', () => {
+      const validator = service.luhnValidator();
+      // Valid test Visa card number
+      const control = new FormControl('4532015112830366');
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should return null for valid card number (Mastercard)', () => {
+      const validator = service.luhnValidator();
+      // Valid test Mastercard number
+      const control = new FormControl('5425233430109903');
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should handle card numbers with spaces', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('4532 0151 1283 0366');
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should return error for card number with invalid checksum', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('4532015112830367');
+      expect(validator(control)).toEqual({ luhn: true });
+    });
+
+    it('should validate simple valid Luhn number', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('79927398713');
+      expect(validator(control)).toBeNull();
+    });
+
+    it('should reject simple invalid Luhn number', () => {
+      const validator = service.luhnValidator();
+      const control = new FormControl('79927398714');
+      expect(validator(control)).toEqual({ luhn: true });
+    });
+  });
+});
+
+--- END OF FILE: src/services/validation.service.spec.ts ---
+
 --- START OF FILE: src/services/validation.service.ts ---
 
 import { Injectable } from '@angular/core';
@@ -2530,7 +3127,7 @@ export class ValidationService {
         return null;
       }
       
-      let value = control.value.toString().replace(/\s+/g, '');
+      const value = control.value.toString().replace(/\s+/g, '');
 
       if (!/^\d+$/.test(value)) {
         return { luhn: true }; // Not a number
@@ -2558,6 +3155,23 @@ export class ValidationService {
 }
 
 --- END OF FILE: src/services/validation.service.ts ---
+
+--- START OF FILE: src/test-setup.ts ---
+import 'zone.js';
+import 'zone.js/testing';
+import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
+
+// Initialize the Angular testing environment
+getTestBed().initTestEnvironment(
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting(),
+);
+
+--- END OF FILE: src/test-setup.ts ---
 
 --- START OF FILE: tsconfig.json ---
 {
@@ -2600,4 +3214,52 @@ export class ValidationService {
   }
 }
 --- END OF FILE: tsconfig.json ---
+
+--- START OF FILE: tsconfig.spec.json ---
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/test-setup.ts"]
+}
+
+--- END OF FILE: tsconfig.spec.json ---
+
+--- START OF FILE: vitest.config.ts ---
+import { defineConfig } from 'vitest/config';
+import angular from '@analogjs/vite-plugin-angular';
+
+export default defineConfig({
+  plugins: [
+    angular({
+      tsconfig: 'tsconfig.spec.json',
+    }),
+  ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['src/test-setup.ts'],
+    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test-setup.ts',
+        '**/*.spec.ts',
+        '**/*.test.ts',
+        '**/main.ts',
+      ],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
+});
+
+--- END OF FILE: vitest.config.ts ---
 
