@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 07:29:16 UTC 2025
+Generated at: Tue Nov 18 07:31:33 UTC 2025
 Branch: main
-Commit: 2046ce93dc1c4c5584656ac009a662f50334c2e0
+Commit: 7bc824a6d1ce5fdd65f028c9ec663eda33d31662
 Repository: judasane/kira-frontend
 ==================================
 
@@ -284,7 +284,7 @@ jobs:
 
 **Secure, PCI-compliant payment checkout interface for Kira's cross-border payment links**
 
-[Live Demo](https://payment-link-checkout-512413970762.us-west1.run.app) · [Backend Repo](https://github.com/judasane/kira)
+[Live Demo]([https://payment-link-checkout-512413970762.us-west1.run.app](https://judasane.github.io/kira-frontend/)) · [Backend Repo](https://github.com/judasane/kira)
 
 </div>
 
