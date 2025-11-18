@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 12:28:02 UTC 2025
+Generated at: Tue Nov 18 12:43:02 UTC 2025
 Branch: main
-Commit: 669a0930067dd4314f23a6bcdbaf1e07bb960e49
+Commit: 2c68276593c2abea2094bdf1e13f934b39d7ad4e
 Repository: judasane/kira-frontend
 ==================================
 
@@ -16,7 +16,6 @@ on:
       - main
   workflow_dispatch:
 
-# Grant GITHUB_TOKEN the permissions required to deploy to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -50,8 +49,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the built application from the 'dist' directory
-          path: './dist'
+          path: './dist/browser'
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -1760,22 +1758,24 @@ A successful implementation of Kira Payment Links Frontend includes:
     "app": {
       "projectType": "application",
       "root": "",
-      "sourceRoot": "./",
+      "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "./dist",
-              "browser": "."
+              "base": "dist"
             },
+            "index": "src/index.html",
             "browser": "src/main.ts",
+            "polyfills": [],
             "tsConfig": "tsconfig.json"
           },
           "configurations": {
             "production": {
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": true
             },
             "development": {
               "optimization": false,
@@ -1788,7 +1788,7 @@ A successful implementation of Kira Payment Links Frontend includes:
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "port": 3000
+            "port": 9002
           },
           "configurations": {
             "production": {
@@ -1804,25 +1804,8 @@ A successful implementation of Kira Payment Links Frontend includes:
     }
   }
 }
+
 --- END OF FILE: angular.json ---
-
---- START OF FILE: index.html ---
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>KiraFrontend</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50">
-  <app-root></app-root>
-</body>
-</html>
-
---- END OF FILE: index.html ---
 
 --- START OF FILE: metadata.json ---
 {
@@ -2386,6 +2369,24 @@ export class PaymentStatusComponent {
 }
 
 --- END OF FILE: src/components/payment-status/payment-status.component.ts ---
+
+--- START OF FILE: src/index.html ---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>KiraFrontend</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+  <app-root></app-root>
+</body>
+</html>
+
+--- END OF FILE: src/index.html ---
 
 --- START OF FILE: src/main.ts ---
 
