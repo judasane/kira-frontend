@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 17:57:40 UTC 2025
+Generated at: Tue Nov 18 23:31:10 UTC 2025
 Branch: main
-Commit: bfd10fb20600ff2b036380e0486e740d22c3473c
+Commit: cb98fcb6b22f1c0784e59a27e666776f3dd1625e
 Repository: judasane/kira-frontend
 ==================================
 
@@ -1972,6 +1972,25 @@ export default tseslint.config(
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+/**
+ * Root component of the Kira payment application.
+ *
+ * This is the top-level component that bootstraps the entire application.
+ * It serves as the entry point and provides the router outlet for
+ * displaying routed components.
+ *
+ * @example
+ * ```typescript
+ * // In main.ts
+ * bootstrapApplication(AppComponent, appConfig);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // The component is automatically instantiated by Angular
+ * // and provides the foundation for the routing system
+ * ```
+ */
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -2167,6 +2186,44 @@ import { CheckoutStatus, PaymentLinkWithPreviewResponse, ProcessPaymentResponse 
 import { FeeBreakdownComponent } from '../fee-breakdown/fee-breakdown.component';
 import { PaymentStatusComponent } from '../payment-status/payment-status.component';
 
+/**
+ * Main checkout component that handles the complete payment flow.
+ *
+ * This component manages the entire checkout process including:
+ * - Loading payment link details
+ * - Displaying payment information and fee breakdown
+ * - Collecting and validating card information
+ * - Processing payments through PSP providers
+ * - Showing payment results (success or failure)
+ *
+ * The component uses signals for reactive state management and includes
+ * comprehensive error handling and validation.
+ *
+ * @example
+ * ```typescript
+ * // Used in routing configuration
+ * {
+ *   path: 'links/:id',
+ *   component: CheckoutComponent
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Navigate to checkout with payment link ID
+ * const router = inject(Router);
+ * router.navigate(['/links', 'pl_abc123xyz']);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Component lifecycle
+ * // 1. OnInit: Loads payment link from route params
+ * // 2. User fills payment form
+ * // 3. onSubmit(): Validates, tokenizes card, processes payment
+ * // 4. Shows success/failure status
+ * ```
+ */
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
@@ -2188,11 +2245,34 @@ export class CheckoutComponent implements OnInit {
   private mockSdkService = inject(MockPspSdkService);
   private validationService = inject(ValidationService);
 
+  /**
+   * Current state of the checkout flow.
+   * Controls which UI is displayed to the user.
+   */
   status = signal<CheckoutStatus>('INITIALIZING');
+
+  /**
+   * The loaded payment link with preview information.
+   * Contains payment amount, fees, and merchant details.
+   */
   paymentLink = signal<PaymentLinkWithPreviewResponse | null>(null);
+
+  /**
+   * Result of the payment processing attempt.
+   * Populated after payment submission completes.
+   */
   paymentResult = signal<ProcessPaymentResponse | null>(null);
+
+  /**
+   * Error message to display to the user when payment fails.
+   * Used for user-friendly error communication.
+   */
   errorMessage = signal<string | null>(null);
 
+  /**
+   * Computed total amount including base amount and all fees.
+   * Automatically recalculates when payment link changes.
+   */
   totalAmount = computed(() => {
     const link = this.paymentLink();
     if (!link) return 0;
@@ -2200,15 +2280,27 @@ export class CheckoutComponent implements OnInit {
     return Math.round(total * 100) / 100;
   });
 
+  /**
+   * Reactive form for collecting payment card information.
+   * Includes validators for card number (Luhn), expiry date, CVC, and cardholder name.
+   */
   paymentForm = this.fb.group({
     cardNumber: ['', [Validators.required, Validators.minLength(16), Validators.maxLength(19), this.validationService.luhnValidator()]],
     expiryDate: ['', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\s?\/\s?([2-9][0-9])$/)]],
     cvc: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(4), Validators.pattern(/^\d+$/)]],
     cardHolder: ['Juan Pérez', [Validators.required, Validators.minLength(3)]]
   });
-  
+
+  /**
+   * Form control for searching payment links by ID.
+   * Used when no payment link ID is provided in the route.
+   */
   searchControl = this.fb.control('', [Validators.required, Validators.minLength(5)]);
 
+  /**
+   * Lifecycle hook that initializes the component.
+   * Loads payment link from route parameters if present.
+   */
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const id = params['id'];
@@ -2220,6 +2312,21 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  /**
+   * Loads a payment link by its ID from the API.
+   *
+   * Updates the component status to show loading state, then fetches
+   * the payment link details. On success, displays the payment form.
+   * On failure, shows the search interface.
+   *
+   * @param id - The unique identifier of the payment link to load
+   *
+   * @example
+   * ```typescript
+   * // Load payment link by ID
+   * this.loadLink('pl_abc123xyz');
+   * ```
+   */
   loadLink(id: string): void {
     this.status.set('LOADING_LINK');
     this.apiService.getPaymentLink(id).pipe(
@@ -2236,6 +2343,21 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  /**
+   * Handles payment link search form submission.
+   *
+   * Validates the search input and navigates to the payment link
+   * if valid. Marks the form as touched to show validation errors if invalid.
+   *
+   * @example
+   * ```typescript
+   * // In template
+   * <form (ngSubmit)="search()">
+   *   <input [formControl]="searchControl" placeholder="Enter payment link ID" />
+   *   <button type="submit">Search</button>
+   * </form>
+   * ```
+   */
   search(): void {
     if (this.searchControl.invalid) {
       this.searchControl.markAsTouched();
@@ -2247,6 +2369,27 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
+  /**
+   * Processes the payment submission.
+   *
+   * This method orchestrates the complete payment flow:
+   * 1. Validates the payment form
+   * 2. Creates a card token using the PSP SDK
+   * 3. Submits payment to the API with idempotency key
+   * 4. Handles success/failure responses
+   * 5. Updates UI state accordingly
+   *
+   * Implements comprehensive error handling for both SDK and API failures.
+   *
+   * @example
+   * ```typescript
+   * // In template
+   * <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+   *   <!-- form fields -->
+   *   <button type="submit" [disabled]="paymentForm.invalid">Pay</button>
+   * </form>
+   * ```
+   */
   async onSubmit(): Promise<void> {
     if (this.paymentForm.invalid) {
       this.paymentForm.markAllAsTouched();
@@ -2303,7 +2446,25 @@ export class CheckoutComponent implements OnInit {
       this.paymentForm.enable();
     }
   }
-  
+
+  /**
+   * Formats card number input to display with spaces every 4 digits.
+   *
+   * Automatically removes non-numeric characters and adds spacing
+   * for better readability (e.g., "4532 0151 1283 0366").
+   *
+   * @param event - The input event from the card number field
+   *
+   * @example
+   * ```typescript
+   * // In template
+   * <input
+   *   formControlName="cardNumber"
+   *   (input)="formatCardNumber($event)"
+   *   placeholder="1234 5678 9012 3456"
+   * />
+   * ```
+   */
   formatCardNumber(event: Event) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, '').substring(0, 16);
@@ -2311,6 +2472,23 @@ export class CheckoutComponent implements OnInit {
     this.paymentForm.controls.cardNumber.setValue(value, { emitEvent: false });
   }
 
+  /**
+   * Formats expiry date input to display as MM / YY.
+   *
+   * Automatically adds separator between month and year for consistent formatting.
+   *
+   * @param event - The input event from the expiry date field
+   *
+   * @example
+   * ```typescript
+   * // In template
+   * <input
+   *   formControlName="expiryDate"
+   *   (input)="formatExpiryDate($event)"
+   *   placeholder="MM / YY"
+   * />
+   * ```
+   */
   formatExpiryDate(event: Event) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, '').substring(0, 4);
@@ -2320,6 +2498,18 @@ export class CheckoutComponent implements OnInit {
     this.paymentForm.controls.expiryDate.setValue(value, { emitEvent: false });
   }
 
+  /**
+   * Resets the checkout state to allow the user to retry payment.
+   *
+   * Clears error messages and payment results, returning to the ready-to-pay state.
+   * Used when a payment fails and the user wants to try again.
+   *
+   * @example
+   * ```typescript
+   * // In template for failed payment
+   * <button (click)="retry()">Try Again</button>
+   * ```
+   */
   retry() {
     this.status.set('READY_TO_PAY');
     this.paymentResult.set(null);
@@ -2391,6 +2581,37 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FeePreview } from '../../models/payment.model';
 
+/**
+ * Component that displays a collapsible breakdown of payment fees.
+ *
+ * Shows detailed information about processing fees, platform fees, and total fees
+ * in an expandable/collapsible panel. Helps users understand the cost structure
+ * of their payment.
+ *
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-fee-breakdown
+ *   [feePreview]="paymentLink().feePreview"
+ *   [baseAmount]="paymentLink().amountUsd"
+ * />
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With specific fee data
+ * const feePreview: FeePreview = {
+ *   processingFeeUsd: 2.50,
+ *   platformFeeUsd: 1.00,
+ *   totalFeesUsd: 3.50
+ * };
+ *
+ * <app-fee-breakdown
+ *   [feePreview]="feePreview"
+ *   [baseAmount]="100.00"
+ * />
+ * ```
+ */
 @Component({
   selector: 'app-fee-breakdown',
   templateUrl: './fee-breakdown.component.html',
@@ -2398,11 +2619,38 @@ import { FeePreview } from '../../models/payment.model';
   imports: [CommonModule, CurrencyPipe]
 })
 export class FeeBreakdownComponent {
+  /**
+   * Fee preview data containing all fee amounts.
+   * Includes processing fees, platform fees, and total.
+   */
   feePreview = input.required<FeePreview>();
+
+  /**
+   * Base payment amount before fees.
+   * Used to display the original transaction amount.
+   */
   baseAmount = input.required<number>();
 
+  /**
+   * Signal controlling the expanded/collapsed state of the breakdown.
+   * Defaults to collapsed (false).
+   */
   isOpen = signal(false);
 
+  /**
+   * Toggles the visibility of the fee breakdown details.
+   *
+   * Switches between expanded and collapsed states, allowing users
+   * to view or hide detailed fee information.
+   *
+   * @example
+   * ```typescript
+   * // In template
+   * <button (click)="toggle()">
+   *   {{ isOpen() ? 'Hide' : 'Show' }} Fee Details
+   * </button>
+   * ```
+   */
   toggle() {
     this.isOpen.update(open => !open);
   }
@@ -2466,6 +2714,38 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ProcessPaymentResponse } from '../../models/payment.model';
 
+/**
+ * Component that displays the payment processing result to the user.
+ *
+ * This component shows either a success or failure message after a payment
+ * has been processed, along with relevant payment details such as transaction ID,
+ * amount, and fees.
+ *
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-payment-status
+ *   [status]="'COMPLETED'"
+ *   [result]="paymentResponse"
+ * />
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Programmatic usage
+ * const paymentResult: ProcessPaymentResponse = {
+ *   id: 'pay_123',
+ *   status: 'COMPLETED',
+ *   amountUsd: 100.00,
+ *   totalFeesUsd: 3.50
+ * };
+ *
+ * <app-payment-status
+ *   [status]="'COMPLETED'"
+ *   [result]="paymentResult"
+ * />
+ * ```
+ */
 @Component({
   selector: 'app-payment-status',
   templateUrl: './payment-status.component.html',
@@ -2473,7 +2753,16 @@ import { ProcessPaymentResponse } from '../../models/payment.model';
   imports: [CommonModule, CurrencyPipe]
 })
 export class PaymentStatusComponent {
+  /**
+   * The final status of the payment transaction.
+   * Determines which UI state to display (success or error).
+   */
   status = input.required<'COMPLETED' | 'FAILED'>();
+
+  /**
+   * The complete payment response object containing transaction details.
+   * Contains information such as payment ID, amounts, and timestamps.
+   */
   result = input.required<ProcessPaymentResponse | null>();
 }
 
@@ -2924,17 +3213,106 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PaymentLinkWithPreviewResponse, ProcessPaymentRequest, ProcessPaymentResponse } from '../models/payment.model';
 
+/**
+ * Service that handles all HTTP communication with the Kira Payment API.
+ *
+ * This service provides methods to interact with payment links and process
+ * payments through the backend API. It encapsulates all API endpoints and
+ * handles request/response formatting.
+ *
+ * @example
+ * ```typescript
+ * const apiService = inject(ApiService);
+ *
+ * // Get payment link details
+ * apiService.getPaymentLink('pl_abc123xyz').subscribe(link => {
+ *   console.log('Amount:', link.amountUsd);
+ *   console.log('Fees:', link.feePreview.totalFeesUsd);
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Process a payment
+ * const request: ProcessPaymentRequest = {
+ *   cardToken: 'tok_stripe_abc123',
+ *   idempotencyKey: 'unique-key-123',
+ *   pspProvider: 'STRIPE',
+ *   metadata: { cardHolder: 'John Doe' }
+ * };
+ *
+ * apiService.processPayment('pl_abc123xyz', request).subscribe(
+ *   response => console.log('Payment completed:', response.id),
+ *   error => console.error('Payment failed:', error)
+ * );
+ * ```
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://kira-payment-api.onrender.com'; 
+  private baseUrl = 'https://kira-payment-api.onrender.com';
 
+  /**
+   * Retrieves payment link details with fee preview.
+   *
+   * Fetches complete information about a payment link including the amount,
+   * merchant details, and calculated fee breakdown.
+   *
+   * @param id - The unique identifier of the payment link
+   * @returns Observable that emits the payment link data with fee preview
+   *
+   * @example
+   * ```typescript
+   * this.apiService.getPaymentLink('pl_abc123xyz').pipe(
+   *   catchError(error => {
+   *     console.error('Payment link not found');
+   *     return of(null);
+   *   })
+   * ).subscribe(link => {
+   *   if (link) {
+   *     console.log('Payment link loaded:', link.id);
+   *   }
+   * });
+   * ```
+   */
   getPaymentLink(id: string): Observable<PaymentLinkWithPreviewResponse> {
     return this.http.get<PaymentLinkWithPreviewResponse>(`${this.baseUrl}/payment-links/${id}`);
   }
 
+  /**
+   * Processes a payment for a specific payment link.
+   *
+   * Submits payment information including the tokenized card data,
+   * idempotency key, and PSP provider to process the transaction.
+   *
+   * @param id - The unique identifier of the payment link
+   * @param request - The payment processing request containing card token and metadata
+   * @returns Observable that emits the payment processing result
+   *
+   * @example
+   * ```typescript
+   * const paymentRequest: ProcessPaymentRequest = {
+   *   cardToken: 'tok_stripe_abc123',
+   *   idempotencyKey: crypto.randomUUID(),
+   *   pspProvider: 'STRIPE',
+   *   metadata: {
+   *     cardHolder: 'Jane Smith',
+   *     billingAddress: '123 Main St'
+   *   }
+   * };
+   *
+   * this.apiService.processPayment('pl_abc123xyz', paymentRequest).subscribe({
+   *   next: (response) => {
+   *     if (response.status === 'COMPLETED') {
+   *       console.log('Payment successful!', response.id);
+   *     }
+   *   },
+   *   error: (err) => console.error('Payment error:', err.message)
+   * });
+   * ```
+   */
   processPayment(id: string, request: ProcessPaymentRequest): Observable<ProcessPaymentResponse> {
     return this.http.post<ProcessPaymentResponse>(`${this.baseUrl}/payment-links/${id}/payments`, request);
   }
@@ -3006,16 +3384,97 @@ describe('MockPspSdkService', () => {
 
 import { Injectable } from '@angular/core';
 
+/**
+ * Mock service that simulates PSP (Payment Service Provider) SDK functionality.
+ *
+ * This service mimics the behavior of real payment provider SDKs (like Stripe or Adyen)
+ * for development and testing purposes. It simulates card tokenization with realistic
+ * network latency and generates mock tokens.
+ *
+ * In production, this would be replaced with actual PSP SDK integrations.
+ *
+ * @example
+ * ```typescript
+ * const mockSdk = inject(MockPspSdkService);
+ *
+ * // Create a Stripe token
+ * const stripeToken = await mockSdk.createToken('STRIPE');
+ * console.log('Token:', stripeToken); // "tok_mock_stripe_..."
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Create an Adyen token
+ * const adyenToken = await mockSdk.createToken('ADYEN');
+ * console.log('Token:', adyenToken); // "tok_mock_adyen_..."
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use in payment flow
+ * async processPayment() {
+ *   try {
+ *     const cardToken = await this.mockSdk.createToken('STRIPE');
+ *     // Use token for payment processing...
+ *   } catch (error) {
+ *     console.error('Tokenization failed');
+ *   }
+ * }
+ * ```
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class MockPspSdkService {
 
+  /**
+   * Creates a mock payment token for the specified PSP provider.
+   *
+   * Simulates the tokenization process that happens in real PSP SDKs, including
+   * realistic network latency (500-1000ms). Generates a unique mock token that
+   * can be used for testing payment flows.
+   *
+   * @param psp - The payment service provider to create a token for
+   * @returns Promise that resolves to a mock token string
+   *
+   * @example
+   * ```typescript
+   * // Create Stripe token with async/await
+   * const token = await mockSdk.createToken('STRIPE');
+   * console.log(token); // "tok_mock_stripe_abc-123-def-456"
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Create Adyen token with Promise
+   * mockSdk.createToken('ADYEN').then(token => {
+   *   console.log('Adyen token created:', token);
+   * });
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Handle in component
+   * async onSubmit() {
+   *   this.loading = true;
+   *   try {
+   *     const cardToken = await this.mockSdk.createToken('STRIPE');
+   *     await this.apiService.processPayment(linkId, {
+   *       cardToken,
+   *       pspProvider: 'STRIPE',
+   *       // ...
+   *     });
+   *   } finally {
+   *     this.loading = false;
+   *   }
+   * }
+   * ```
+   */
   createToken(psp: 'STRIPE' | 'ADYEN'): Promise<string> {
     return new Promise(resolve => {
       // Simulate network latency for the tokenization request
       const latency = 500 + Math.random() * 500; // 500ms to 1000ms
-      
+
       setTimeout(() => {
         const token = `tok_mock_${psp.toLowerCase()}_${crypto.randomUUID()}`;
         resolve(token);
@@ -3116,11 +3575,51 @@ describe('ValidationService', () => {
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
+/**
+ * Service that provides custom validators for Angular forms.
+ *
+ * This service contains reusable validation functions that can be applied
+ * to form controls to ensure data integrity and correctness.
+ *
+ * @example
+ * ```typescript
+ * const validationService = inject(ValidationService);
+ *
+ * const form = this.fb.group({
+ *   cardNumber: ['', [Validators.required, validationService.luhnValidator()]]
+ * });
+ * ```
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class ValidationService {
 
+  /**
+   * Creates a validator function that validates card numbers using the Luhn algorithm.
+   *
+   * The Luhn algorithm (also known as modulus 10 algorithm) is a checksum formula
+   * used to validate credit card numbers, IMEI numbers, and other identification numbers.
+   * It protects against accidental errors but not malicious attacks.
+   *
+   * @returns A validator function that returns null if valid, or an object with 'luhn' property if invalid
+   *
+   * @example
+   * ```typescript
+   * // Valid card number
+   * const control1 = new FormControl('4532015112830366');
+   * const validator = validationService.luhnValidator();
+   * validator(control1); // Returns null (valid)
+   *
+   * // Invalid card number
+   * const control2 = new FormControl('1234567890123456');
+   * validator(control2); // Returns { luhn: true } (invalid)
+   *
+   * // Card number with spaces (automatically handled)
+   * const control3 = new FormControl('4532 0151 1283 0366');
+   * validator(control3); // Returns null (valid)
+   * ```
+   */
   luhnValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) {
