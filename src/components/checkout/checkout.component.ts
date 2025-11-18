@@ -141,7 +141,7 @@ export class CheckoutComponent implements OnInit {
         }
       });
 
-    } catch (error) {
+    } catch {
       this.errorMessage.set('An unexpected error occurred while preparing the payment. Please try again.');
       this.status.set('ERROR_RETRYABLE');
       this.paymentForm.enable();
