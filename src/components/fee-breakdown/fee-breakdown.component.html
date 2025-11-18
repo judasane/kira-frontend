@@ -15,35 +15,35 @@
         <ul class="space-y-2 text-slate-600">
           <li class="flex justify-between">
             <span>Item Price</span>
-            <span class="font-medium text-slate-800">{{ baseAmount() | currency:'USD' }}</span>
+            <span class="font-medium text-slate-800">{{ baseAmount() | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           <li class="flex justify-between">
             <span>Fixed Fee</span>
-            <span>{{ preview.breakdown.fixedFeeUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.fixedFeeUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           <li class="flex justify-between">
             <span>Variable Fee</span>
-            <span>{{ preview.breakdown.variableFeeUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.variableFeeUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
            <li class="flex justify-between">
             <span>FX Markup</span>
-            <span>{{ preview.breakdown.fxMarkupUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.fxMarkupUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           @if (preview.breakdown.firstTxDiscountUsd > 0) {
             <li class="flex justify-between text-green-600">
               <span>First Transaction Discount</span>
-              <span>- {{ preview.breakdown.firstTxDiscountUsd | currency:'USD' }}</span>
+              <span>- {{ preview.breakdown.firstTxDiscountUsd | currency:'USD':'symbol':'1.2-2' }}</span>
             </li>
           }
            <li class="flex justify-between font-semibold pt-2 border-t border-slate-200 text-slate-800">
             <span>Total Fees</span>
-            <span>{{ preview.totalFeesUsd | currency:'USD' }}</span>
+            <span>{{ preview.totalFeesUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
         </ul>
 
         <div class="mt-4 pt-4 border-t border-dashed border-slate-300">
            <p class="text-xs text-slate-500 text-center">
-              Exchange Rate: 1 USD ≈ {{ preview.fxRate | number:'1.2-2' }} MXN. <br> Recipient will receive ~{{ preview.recipientAmountMxn | currency:'MXN' }}.
+              Exchange Rate: 1 USD ≈ {{ preview.fxRate | number:'1.2-2' }} MXN. <br> Recipient will receive ~{{ preview.recipientAmountMxn | currency:'MXN':'symbol':'1.2-2' }}.
            </p>
         </div>
       </div>

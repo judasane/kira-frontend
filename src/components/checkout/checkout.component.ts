@@ -41,7 +41,8 @@ export class CheckoutComponent implements OnInit {
   totalAmount = computed(() => {
     const link = this.paymentLink();
     if (!link) return 0;
-    return link.amountUsd + link.feePreview.totalFeesUsd;
+    const total = Number(link.amountUsd) + link.feePreview.totalFeesUsd;
+    return Math.round(total * 100) / 100;
   });
 
   paymentForm = this.fb.group({
