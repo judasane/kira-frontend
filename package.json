@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint": "ng lint"
   },
   "engines": {
     "node": ">=20.19.0"
@@ -33,8 +34,11 @@
     "@angular/platform-browser-dynamic": "^20.3.12",
     "@types/node": "^22.14.0",
     "@vitest/ui": "^3.2.4",
+    "angular-eslint": "20.6.0",
+    "eslint": "^9.39.0",
     "jsdom": "^27.2.0",
     "typescript": "~5.8.2",
+    "typescript-eslint": "8.46.3",
     "vite": "^6.2.0",
     "vitest": "^3.2.4",
     "zone.js": "^0.15.1"
