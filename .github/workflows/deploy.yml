@@ -6,7 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-# Grant GITHUB_TOKEN the permissions required to deploy to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -40,8 +39,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the built application from the 'dist' directory
-          path: './dist'
+          path: './dist/browser'
 
       - name: Deploy to GitHub Pages
         id: deployment
