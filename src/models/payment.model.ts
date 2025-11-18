@@ -30,7 +30,7 @@ export interface ProcessPaymentRequest {
   cardToken: string;
   pspProvider: 'STRIPE' | 'ADYEN';
   idempotencyKey: string;
-  metadata?: { [key: string]: any };
+  metadata?: Record<string, unknown>;
 }
 
 export interface ProcessPaymentResponse {

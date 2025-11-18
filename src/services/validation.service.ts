@@ -13,7 +13,7 @@ export class ValidationService {
         return null;
       }
       
-      let value = control.value.toString().replace(/\s+/g, '');
+      const value = control.value.toString().replace(/\s+/g, '');
 
       if (!/^\d+$/.test(value)) {
         return { luhn: true }; // Not a number

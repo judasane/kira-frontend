@@ -2,6 +2,7 @@
 
 # Angular
 /dist
+/coverage
 /.angular/cache
 
 # Dependencies
