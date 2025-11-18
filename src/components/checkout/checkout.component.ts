@@ -1,3 +1,4 @@
+
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -41,7 +42,7 @@ export class CheckoutComponent implements OnInit {
   totalAmount = computed(() => {
     const link = this.paymentLink();
     if (!link) return 0;
-    const total = Number(link.amountUsd) + link.feePreview.totalFeesUsd;
+    const total = Number(link.amountUsd) + Number(link.feePreview.totalFeesUsd);
     return Math.round(total * 100) / 100;
   });
 
