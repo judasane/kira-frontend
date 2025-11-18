@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 07:21:01 UTC 2025
+Generated at: Tue Nov 18 07:29:16 UTC 2025
 Branch: main
-Commit: b407c967e691aa8c387ae28db14ec944bc8af381
+Commit: 2046ce93dc1c4c5584656ac009a662f50334c2e0
 Repository: judasane/kira-frontend
 ==================================
 
@@ -32,14 +32,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build -- --configuration production
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Since there is no build step, upload the entire repository
-          path: '.'
+          # Upload the built application from the 'dist' directory
+          path: './dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
