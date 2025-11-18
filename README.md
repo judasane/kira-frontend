@@ -8,7 +8,7 @@
 
 **Secure, PCI-compliant payment checkout interface for Kira's cross-border payment links**
 
-[Live Demo](https://payment-link-checkout-512413970762.us-west1.run.app) · [Backend Repo](https://github.com/judasane/kira)
+[Live Demo]([https://payment-link-checkout-512413970762.us-west1.run.app](https://judasane.github.io/kira-frontend/)) · [Backend Repo](https://github.com/judasane/kira)
 
 </div>
 
