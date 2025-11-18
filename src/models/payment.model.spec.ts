@@ -49,7 +49,7 @@ describe('Payment Models', () => {
     });
 
     it('should accept all valid status values', () => {
-      const statuses: Array<PaymentLinkResponse['status']> = [
+      const statuses: PaymentLinkResponse['status'][] = [
         'DRAFT',
         'ACTIVE',
         'EXPIRED',

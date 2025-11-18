@@ -1,7 +1,7 @@
 
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { CheckoutStatus, ProcessPaymentResponse } from '../../models/payment.model';
+import { ProcessPaymentResponse } from '../../models/payment.model';
 
 @Component({
   selector: 'app-payment-status',
