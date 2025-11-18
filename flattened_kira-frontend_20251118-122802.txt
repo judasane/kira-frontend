@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 12:18:07 UTC 2025
+Generated at: Tue Nov 18 12:28:02 UTC 2025
 Branch: main
-Commit: 9eedab9e4eb60f377eb3eb479e18ecb6ba5a1e95
+Commit: 669a0930067dd4314f23a6bcdbaf1e07bb960e49
 Repository: judasane/kira-frontend
 ==================================
 
@@ -2060,6 +2060,7 @@ export const APP_ROUTES: Routes = [
 --- END OF FILE: src/components/checkout/checkout.component.html ---
 
 --- START OF FILE: src/components/checkout/checkout.component.ts ---
+
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -2103,7 +2104,7 @@ export class CheckoutComponent implements OnInit {
   totalAmount = computed(() => {
     const link = this.paymentLink();
     if (!link) return 0;
-    const total = Number(link.amountUsd) + link.feePreview.totalFeesUsd;
+    const total = Number(link.amountUsd) + Number(link.feePreview.totalFeesUsd);
     return Math.round(total * 100) / 100;
   });
 
@@ -2233,6 +2234,7 @@ export class CheckoutComponent implements OnInit {
     this.errorMessage.set(null);
   }
 }
+
 --- END OF FILE: src/components/checkout/checkout.component.ts ---
 
 --- START OF FILE: src/components/fee-breakdown/fee-breakdown.component.html ---
