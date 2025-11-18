@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { catchError, finalize, of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { ApiService } from '../../services/api.service';
 import { MockPspSdkService } from '../../services/mock-psp-sdk.service';
@@ -35,6 +36,7 @@ export class CheckoutComponent implements OnInit {
   status = signal<CheckoutStatus>('INITIALIZING');
   paymentLink = signal<PaymentLinkWithPreviewResponse | null>(null);
   paymentResult = signal<ProcessPaymentResponse | null>(null);
+  errorMessage = signal<string | null>(null);
 
   totalAmount = computed(() => {
     const link = this.paymentLink();
@@ -97,6 +99,7 @@ export class CheckoutComponent implements OnInit {
 
     this.status.set('PROCESSING_PAYMENT');
     this.paymentForm.disable();
+    this.errorMessage.set(null);
 
     try {
       const cardToken = await this.mockSdkService.createToken('STRIPE');
@@ -105,13 +108,24 @@ export class CheckoutComponent implements OnInit {
       if(!id) {
           throw new Error('Payment link ID is missing');
       }
+      
+      const { cardHolder } = this.paymentForm.getRawValue();
 
       this.apiService.processPayment(id, {
         cardToken,
         idempotencyKey,
-        pspProvider: 'STRIPE'
+        pspProvider: 'STRIPE',
+        metadata: {
+          cardHolder
+        }
       }).pipe(
-          catchError(() => {
+          catchError((error: HttpErrorResponse) => {
+              const apiError = error.error;
+              if (apiError && typeof apiError.message === 'string') {
+                  this.errorMessage.set(apiError.message);
+              } else {
+                  this.errorMessage.set(`We couldn't process your payment at this time. Please try again.`);
+              }
               this.status.set('ERROR_RETRYABLE');
               return of(null);
           }),
@@ -128,6 +142,7 @@ export class CheckoutComponent implements OnInit {
       });
 
     } catch (error) {
+      this.errorMessage.set('An unexpected error occurred while preparing the payment. Please try again.');
       this.status.set('ERROR_RETRYABLE');
       this.paymentForm.enable();
     }
@@ -152,5 +167,6 @@ export class CheckoutComponent implements OnInit {
   retry() {
     this.status.set('READY_TO_PAY');
     this.paymentResult.set(null);
+    this.errorMessage.set(null);
   }
 }
