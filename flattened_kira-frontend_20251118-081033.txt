@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 07:50:16 UTC 2025
+Generated at: Tue Nov 18 08:10:33 UTC 2025
 Branch: main
-Commit: 4e5bdc441160b6965eed5fdf85971365c1ed0bca
+Commit: 0f309c5ebc5cb0385ce8a65c91cde548753ade75
 Repository: judasane/kira-frontend
 ==================================
 
@@ -1770,7 +1770,7 @@ A successful implementation of Kira Payment Links Frontend includes:
               "base": "./dist",
               "browser": "."
             },
-            "browser": "index.tsx",
+            "browser": "src/main.ts",
             "tsConfig": "tsconfig.json"
           },
           "configurations": {
@@ -1849,29 +1849,6 @@ A successful implementation of Kira Payment Links Frontend includes:
 </html>
 
 --- END OF FILE: index.html ---
-
---- START OF FILE: index.tsx ---
-
-import '@angular/compiler';
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withHashLocation } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { provideZonelessChangeDetection } from '@angular/core';
-
-import { AppComponent } from './src/app.component';
-import { APP_ROUTES } from './src/app.routes';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideZonelessChangeDetection(),
-    provideRouter(APP_ROUTES, withHashLocation()),
-    provideHttpClient(),
-  ],
-}).catch(err => console.error(err));
-
-// AI Studio always uses an `index.tsx` file for all project types.
-
---- END OF FILE: index.tsx ---
 
 --- START OF FILE: metadata.json ---
 {
@@ -2434,6 +2411,27 @@ export class PaymentStatusComponent {
 
 --- END OF FILE: src/components/payment-status/payment-status.component.ts ---
 
+--- START OF FILE: src/main.ts ---
+
+import '@angular/compiler';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideRouter, withHashLocation } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { APP_ROUTES } from './app.routes';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideZonelessChangeDetection(),
+    provideRouter(APP_ROUTES, withHashLocation()),
+    provideHttpClient(),
+  ],
+}).catch(err => console.error(err));
+
+--- END OF FILE: src/main.ts ---
+
 --- START OF FILE: src/models/payment.model.ts ---
 export interface FeePreview {
   fxRate: number;
@@ -2605,16 +2603,12 @@ export class ValidationService {
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
-    "jsx": "react-jsx",
     "paths": {
       "@/*": [
         "./*"
       ]
     }
   },
-  "files": [
-    "./index.tsx"
-  ],
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true
   }
