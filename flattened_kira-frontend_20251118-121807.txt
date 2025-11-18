@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 08:10:33 UTC 2025
+Generated at: Tue Nov 18 12:18:07 UTC 2025
 Branch: main
-Commit: 0f309c5ebc5cb0385ce8a65c91cde548753ade75
+Commit: 9eedab9e4eb60f377eb3eb479e18ecb6ba5a1e95
 Repository: judasane/kira-frontend
 ==================================
 
@@ -1807,43 +1807,17 @@ A successful implementation of Kira Payment Links Frontend includes:
 --- END OF FILE: angular.json ---
 
 --- START OF FILE: index.html ---
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kira Payment Checkout</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://rsms.me/">
-  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-  <style>
-    :root { font-family: 'Inter', sans-serif; }
-    @supports (font-variation-settings: normal) {
-      :root { font-family: 'Inter var', sans-serif; }
-    }
-  </style>
-<script type="importmap">
-{
-  "imports": {
-    "rxjs": "https://aistudiocdn.com/rxjs@^7.8.2?conditions=es2015",
-    "rxjs/operators": "https://aistudiocdn.com/rxjs@^7.8.2/operators?conditions=es2015",
-    "rxjs/ajax": "https://aistudiocdn.com/rxjs@^7.8.2/ajax?conditions=es2015",
-    "rxjs/webSocket": "https://aistudiocdn.com/rxjs@^7.8.2/webSocket?conditions=es2015",
-    "rxjs/testing": "https://aistudiocdn.com/rxjs@^7.8.2/testing?conditions=es2015",
-    "rxjs/fetch": "https://aistudiocdn.com/rxjs@^7.8.2/fetch?conditions=es2015",
-    "@angular/platform-browser": "https://next.esm.sh/@angular/platform-browser@^20.3.12?external=rxjs",
-    "@angular/router": "https://next.esm.sh/@angular/router@^20.3.12?external=rxjs",
-    "@angular/common/http": "https://next.esm.sh/@angular/common@^20.3.12/http?external=rxjs",
-    "@angular/core": "https://next.esm.sh/@angular/core@^20.3.12?external=rxjs",
-    "@angular/forms": "https://next.esm.sh/@angular/forms@^20.3.12?external=rxjs",
-    "@angular/common": "https://next.esm.sh/@angular/common@^20.3.12?external=rxjs",
-    "@angular/compiler": "https://next.esm.sh/@angular/compiler@^20.3.12?external=rxjs"
-  }
-}
-</script>
+  <meta charset="utf-8">
+  <title>KiraFrontend</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 antialiased">
+<body class="bg-slate-50">
   <app-root></app-root>
 </body>
 </html>
@@ -2057,8 +2031,7 @@ export const APP_ROUTES: Routes = [
                     }
                   </div>
                   <div>
-                    <label for="cvc" class="block text-sm font-medium text-slate-700">CVC</label>
-                    <input type="tel" id="cvc" formControlName="cvc" placeholder="123" maxlength="4" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                    <label for="cvc" class="block text-sm font-medium text-slate-700">CVC</label>                    <input type="tel" id="cvc" formControlName="cvc" placeholder="123" maxlength="4" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
                      @if(paymentForm.controls.cvc.touched && paymentForm.controls.cvc.errors) {
                       <p class="mt-1 text-xs text-red-600">Enter a valid CVC.</p>
                     }
@@ -2074,7 +2047,7 @@ export const APP_ROUTES: Routes = [
                   </svg>
                   Processing...
                 } @else {
-                  <span>Pay {{ totalAmount() | currency:'USD' }}</span>
+                  <span>Pay {{ totalAmount() | currency:'USD':'symbol':'1.2-2' }}</span>
                 }
               </button>
             </form>
@@ -2130,7 +2103,8 @@ export class CheckoutComponent implements OnInit {
   totalAmount = computed(() => {
     const link = this.paymentLink();
     if (!link) return 0;
-    return link.amountUsd + link.feePreview.totalFeesUsd;
+    const total = Number(link.amountUsd) + link.feePreview.totalFeesUsd;
+    return Math.round(total * 100) / 100;
   });
 
   paymentForm = this.fb.group({
@@ -2279,35 +2253,35 @@ export class CheckoutComponent implements OnInit {
         <ul class="space-y-2 text-slate-600">
           <li class="flex justify-between">
             <span>Item Price</span>
-            <span class="font-medium text-slate-800">{{ baseAmount() | currency:'USD' }}</span>
+            <span class="font-medium text-slate-800">{{ baseAmount() | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           <li class="flex justify-between">
             <span>Fixed Fee</span>
-            <span>{{ preview.breakdown.fixedFeeUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.fixedFeeUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           <li class="flex justify-between">
             <span>Variable Fee</span>
-            <span>{{ preview.breakdown.variableFeeUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.variableFeeUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
            <li class="flex justify-between">
             <span>FX Markup</span>
-            <span>{{ preview.breakdown.fxMarkupUsd | currency:'USD' }}</span>
+            <span>{{ preview.breakdown.fxMarkupUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
           @if (preview.breakdown.firstTxDiscountUsd > 0) {
             <li class="flex justify-between text-green-600">
               <span>First Transaction Discount</span>
-              <span>- {{ preview.breakdown.firstTxDiscountUsd | currency:'USD' }}</span>
+              <span>- {{ preview.breakdown.firstTxDiscountUsd | currency:'USD':'symbol':'1.2-2' }}</span>
             </li>
           }
            <li class="flex justify-between font-semibold pt-2 border-t border-slate-200 text-slate-800">
             <span>Total Fees</span>
-            <span>{{ preview.totalFeesUsd | currency:'USD' }}</span>
+            <span>{{ preview.totalFeesUsd | currency:'USD':'symbol':'1.2-2' }}</span>
           </li>
         </ul>
 
         <div class="mt-4 pt-4 border-t border-dashed border-slate-300">
            <p class="text-xs text-slate-500 text-center">
-              Exchange Rate: 1 USD ≈ {{ preview.fxRate | number:'1.2-2' }} MXN. <br> Recipient will receive ~{{ preview.recipientAmountMxn | currency:'MXN' }}.
+              Exchange Rate: 1 USD ≈ {{ preview.fxRate | number:'1.2-2' }} MXN. <br> Recipient will receive ~{{ preview.recipientAmountMxn | currency:'MXN':'symbol':'1.2-2' }}.
            </p>
         </div>
       </div>
@@ -2607,8 +2581,18 @@ export class ValidationService {
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts"
+  ],
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true
   }
