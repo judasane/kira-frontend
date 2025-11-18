@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 13:42:39 UTC 2025
+Generated at: Tue Nov 18 17:57:40 UTC 2025
 Branch: main
-Commit: 5181f2c2f17cc78d7158189ff8d37c83baf207c3
+Commit: bfd10fb20600ff2b036380e0486e740d22c3473c
 Repository: judasane/kira-frontend
 ==================================
 
@@ -3203,11 +3203,6 @@ getTestBed().initTestEnvironment(
   },
   "include": [
     "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.spec.ts"
   ],
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true
