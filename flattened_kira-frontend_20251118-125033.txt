@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 12:43:02 UTC 2025
+Generated at: Tue Nov 18 12:50:33 UTC 2025
 Branch: main
-Commit: 2c68276593c2abea2094bdf1e13f934b39d7ad4e
+Commit: e0be751ea5d74a10d4ea7f0ed4ef9629dba702a0
 Repository: judasane/kira-frontend
 ==================================
 
@@ -41,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Build application
-        run: npm run build -- --configuration production
+        run: npm run build -- --configuration production --base-href /kira-frontend/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -2375,17 +2375,16 @@ export class PaymentStatusComponent {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>KiraFrontend</title>
-  <base href="/">
+  <title>Kira Payment Links</title>
+  <base href="/kira-frontend/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50">
   <app-root></app-root>
 </body>
 </html>
-
 --- END OF FILE: src/index.html ---
 
 --- START OF FILE: src/main.ts ---
