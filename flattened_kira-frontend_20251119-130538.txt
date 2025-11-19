@@ -1,9 +1,9 @@
 ==================================
 FLATTENED: kira-frontend
 Type: Submodule
-Generated at: Tue Nov 18 23:31:10 UTC 2025
+Generated at: Wed Nov 19 13:05:38 UTC 2025
 Branch: main
-Commit: cb98fcb6b22f1c0784e59a27e666776f3dd1625e
+Commit: 1ef9ef0d6e05bacd151431125a3baf8e662d13dd
 Repository: judasane/kira-frontend
 ==================================
 
@@ -2173,7 +2173,7 @@ export const APP_ROUTES: Routes = [
 --- START OF FILE: src/components/checkout/checkout.component.ts ---
 
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { catchError, finalize, of } from 'rxjs';
@@ -2230,7 +2230,6 @@ import { PaymentStatusComponent } from '../payment-status/payment-status.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    RouterOutlet,
     ReactiveFormsModule,
     CurrencyPipe,
     FeeBreakdownComponent,
@@ -2774,7 +2773,7 @@ export class PaymentStatusComponent {
 <head>
   <meta charset="utf-8">
   <title>Kira Payment Links</title>
-  <base href="/kira-frontend/">
+  <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
