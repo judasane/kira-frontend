@@ -1,6 +1,6 @@
 
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { catchError, finalize, of } from 'rxjs';
@@ -57,7 +57,6 @@ import { PaymentStatusComponent } from '../payment-status/payment-status.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    RouterOutlet,
     ReactiveFormsModule,
     CurrencyPipe,
     FeeBreakdownComponent,
